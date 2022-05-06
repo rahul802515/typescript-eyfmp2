@@ -12,8 +12,9 @@ interface Scrap {
 }
 
 import { faker } from '@faker-js/faker';
-import { Observable, filter } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, filter, interval } from 'rxjs';
+import { concatMap, map, mergeMap, switchMap, take } from 'rxjs/operators';
+import Axios from 'axios-observable';
 
 let car = (): Car => {
   return {
@@ -28,7 +29,7 @@ let car = (): Car => {
 let obs = new Observable((observer) => {
   setInterval(() => {
     observer.next(car());
-  }, 100);
+  }, 1000);
 });
 
 // obs.subscribe((val) => {
@@ -45,6 +46,67 @@ let obs3 = obs2.pipe(
   })
 );
 
-obs3.subscribe((val) => {
-  console.log(val);
+// obs3.subscribe((val) => {
+//   console.log(val);
+// });
+
+let obs4 = interval(1000).pipe(
+  switchMap((value) =>
+    Axios.get('https://random-data-api.com/api/color/random_color')
+  )
+);
+
+// obs4.subscribe((val) => {
+//   // console.log(val.data);
+// });
+
+let obs5 = interval(100).pipe(
+  concatMap((value) =>
+    Axios.get('https://random-data-api.com/api/color/random_color')
+  )
+);
+
+// obs5.subscribe((val) => {
+//   console.log(val.data);
+// });
+
+let obs6 = interval(50).pipe(
+  take(5),
+  mergeMap((value) =>
+    Axios.get('https://random-data-api.com/api/color/random_color')
+  )
+);
+
+obs6.subscribe((val) => {
+  console.log(val.data);
 });
+
+// observer.next(response.data);
+// observer.complete();
+
+// .catch((erroe) =>{
+//   observer.error(error);
+// })
+
+// obs4.subscribe((val) => {
+//   console.log(val);
+// });
+
+// let obs4 = new Observable((observer) => {
+//   axios
+//     .get('https://jsonplaceholder.typicode.com/users')
+//     .then((response) => {
+//       observer.next(response.data);
+//       observer.complete();
+//     })
+//     .catch((error) => {
+//       observer.error(error);
+//     });
+// });
+
+// let obs5 = obs4.pipe(
+//   switchMap(value =>{
+//     console.log(value)
+//     return value
+//   })
+// )
